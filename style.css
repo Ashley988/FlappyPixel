@@ -1,0 +1,93 @@
+body {
+  margin: 0;
+  padding: 0;
+  background: #000;   /* Schwarzer Hintergrund */
+  color: #fff;        /* Weiße Schriftfarbe für Kontrast */
+  font-family: sans-serif;
+  text-align: center; /* Inhalt horizontal zentrieren */
+}
+
+/* Layout für Start-, Modus- und Spiel-Bereich (volle Höhe zentriert) */
+#start-screen, #mode-selection, #game-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;  /* mindestens Fensterhöhe */
+}
+
+/* Überschrift im Modus-Auswahl-Bereich */
+#mode-selection h2 {
+  margin-bottom: 20px;
+}
+
+/* Einheitliches Button-Styling */
+button {
+  background: transparent;
+  color: #fff;
+  border: 2px solid #fff;
+  padding: 10px 20px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  margin: 5px 0;
+}
+
+/* Hover-Effekt für Buttons */
+button:hover {
+  background: #fff;
+  color: #000;
+}
+
+/* Tic-Tac-Toe Spielfeld als 3x3 Grid */
+#board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  width: 90vmin;
+  height: 90vmin;
+  max-width: 500px;
+  max-height: 500px;
+  margin: 20px auto;  /* zentriert mit etwas Abstand nach oben/unten */
+}
+
+/* einzelne Zelle des Spielfelds */
+.cell {
+  background: #fff;    /* weißes Feld */
+  color: #000;         /* Symbolfarbe schwarz (auf weißem Feld) */
+  font-size: 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  /* Zeichne Gitterlinien: nur rechte und untere Kante jeder Zelle (innere Linien) */
+  border-right: 2px solid #000;
+  border-bottom: 2px solid #000;
+}
+
+/* Entferne rechten Rand bei jeder 3. Zelle (Index 2, 5, 8 = rechteste Spalte) */
+.cell:nth-child(3n) {
+  border-right: none;
+}
+
+/* Entferne unteren Rand bei den letzten drei Zellen (Index 7, 8, 9 als letzte Reihe) */
+.cell:nth-child(n+7) {
+  border-bottom: none;
+}
+
+/* Statusanzeige über dem Spielfeld */
+#status {
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+}
+
+/* Anpassungen für sehr kleine Bildschirme (Responsivität) */
+@media (max-width: 400px) {
+  .cell {
+    font-size: 3rem;
+  }
+  button {
+    font-size: 1rem;
+    padding: 8px 16px;
+  }
+}
+
