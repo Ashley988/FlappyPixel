@@ -2,11 +2,11 @@
 let canvas, ctx, animationId;
 let bird = {}, pipes = [];
 let gameActive = false, gameOverState = false;
-let gravity = 0.29, jump = -5.5;
-let score = 0, speed = 2.1, birdColor = "#FFD700";
-let pipeGap = 150, pipeWidth = 54, pipeMin = 80, pipeMax = 420;
-let speedIncrease = 0.045, minGap = 110, maxSpeed = 4.5;
-let lastPipeTime = 0, pipeInterval = 1350, frameTime = 0;
+let gravity = 0.26, jump = -5.1;
+let score = 0, speed = 2.2, birdColor = "#FFD700";
+let pipeGap = 220, pipeWidth = 54, pipeMin = 50, pipeMax = 380;
+let speedIncrease = 0.048, minGap = 110, maxSpeed = 4.5;
+let lastPipeTime = 0, pipeInterval = 1480, frameTime = 0;
 let flapAnimation = 0;
 let lives = 3;
 let invulnerable = false;
@@ -30,10 +30,9 @@ document.getElementById('restartBtn').onclick = function() {
 function jumpBird() {
     if (!gameActive) return;
     bird.vy = jump;
-    flapAnimation = 7; // Flügel schlägt hoch
+    flapAnimation = 7;
 }
 
-// Touch und Klick auf den Button
 const jumpBtn = document.getElementById('jumpBtn');
 jumpBtn.addEventListener('touchstart', function(e) {
     e.preventDefault();
@@ -41,14 +40,12 @@ jumpBtn.addEventListener('touchstart', function(e) {
 }, {passive: false});
 jumpBtn.addEventListener('mousedown', jumpBird);
 
-// Tap aufs Canvas (optional, macht mobile angenehmer)
 document.getElementById('gameCanvas').addEventListener('touchstart', function(e){
     e.preventDefault();
     jumpBird();
 }, {passive: false});
 document.getElementById('gameCanvas').addEventListener('mousedown', jumpBird);
 
-// Tastatur (Space) für Desktop
 document.addEventListener('keydown', e => {
     if ((e.code === "Space" || e.key === " ") && gameActive) jumpBird();
 });
@@ -62,10 +59,10 @@ function startGame() {
     gameActive = true;
     gameOverState = false;
     score = 0;
-    speed = 2.1;
-    pipeGap = 150;
+    speed = 2.2;
+    pipeGap = 220;
     lastPipeTime = 0;
-    pipeInterval = 1350;
+    pipeInterval = 1480;
     lives = 3;
     invulnerable = false;
     document.getElementById('score').textContent = score;
@@ -75,7 +72,9 @@ function startGame() {
 }
 
 function createPipe() {
-    let gapY = Math.floor(Math.random() * (pipeMax - pipeMin)) + pipeMin;
+    let minH = 40; // Pipe minimal
+    let maxH = canvas.height - pipeGap - minH;
+    let gapY = Math.floor(Math.random() * (maxH - minH + 1)) + minH;
     return { x: canvas.width, gapY: gapY, scored: false };
 }
 
@@ -102,10 +101,10 @@ function update(dt) {
             score++;
             document.getElementById('score').textContent = score;
             // Schwierigkeit steigern
-            if (score % 2 === 0 && speed < maxSpeed) {
+            if (score % 3 === 0 && speed < maxSpeed) {
                 speed += speedIncrease;
-                pipeGap = Math.max(pipeGap - 7, minGap);
-                pipeInterval = Math.max(pipeInterval - 50, 920);
+                pipeGap = Math.max(pipeGap - 11, minGap);
+                pipeInterval = Math.max(pipeInterval - 55, 900);
             }
         }
         // Entferne Pipes, die links raus sind
@@ -114,29 +113,32 @@ function update(dt) {
         }
     }
 
-    // Kollisionen prüfen (Leben abziehen statt sofort Game Over)
+    // Kollisionen prüfen (erst nach 3 Crashs wirklich Game Over)
     if (!invulnerable) {
+        let hit = false;
         for (let pipe of pipes) {
-            if (collides(bird, pipe.x, 0, pipeWidth, pipe.gapY)) handleHit();
-            if (collides(bird, pipe.x, pipe.gapY + pipeGap, pipeWidth, canvas.height - pipe.gapY - pipeGap)) handleHit();
+            if (collides(bird, pipe.x, 0, pipeWidth, pipe.gapY)) hit = true;
+            if (collides(bird, pipe.x, pipe.gapY + pipeGap, pipeWidth, canvas.height - pipe.gapY - pipeGap)) hit = true;
         }
         // Unten/Oben raus
-        if (bird.y < 0 || bird.y + bird.h > canvas.height) handleHit();
+        if (bird.y < 0 || bird.y + bird.h > canvas.height) hit = true;
+        if (hit) handleHit();
     }
 }
 
 function handleHit() {
     lives--;
     updateLivesDisplay();
-    invulnerable = true;
-    setTimeout(() => { invulnerable = false; }, 900);
     if (lives <= 0) {
         endGame();
-    } else {
-        // Bird zurück in die Mitte, null Geschwindigkeit, kleiner "Blinzel"-Effekt
-        bird.y = canvas.height / 2 - 25;
-        bird.vy = 0;
+        return;
     }
+    invulnerable = true;
+    // Bird wieder in Mitte, nach unten/unten alles stoppen, Pipes kurz zurück
+    bird.y = canvas.height / 2 - 25;
+    bird.vy = 0;
+    // Bird blinkt und ist 1,2 Sek. unverwundbar
+    setTimeout(() => { invulnerable = false; }, 1200);
 }
 
 function updateLivesDisplay() {
@@ -159,7 +161,7 @@ function draw() {
 
     // Bird (Pixel-Art-Look), bei Unverwundbarkeit halb durchsichtig
     ctx.save();
-    if (invulnerable) ctx.globalAlpha = 0.35 + 0.18 * Math.sin(performance.now()/90);
+    if (invulnerable) ctx.globalAlpha = 0.45 + 0.22 * Math.sin(performance.now()/110);
     drawBird(ctx, bird.x, bird.y, birdColor, flapAnimation);
     ctx.restore();
 
@@ -170,7 +172,7 @@ function draw() {
 
     // Game Over Overlay
     if (gameOverState) {
-        ctx.fillStyle = "rgba(0,0,0,0.74)";
+        ctx.fillStyle = "rgba(0,0,0,0.73)";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = "#fff";
         ctx.font = "bold 36px monospace";
@@ -225,7 +227,6 @@ function drawPipe(ctx, x, y, w, h, color, up) {
 
 // ====== Bird im Pixel-Look ======
 function drawBird(ctx, x, y, color, flap) {
-    // Körper
     ctx.save();
     ctx.beginPath();
     ctx.fillStyle = color;
