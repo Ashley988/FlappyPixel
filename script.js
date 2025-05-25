@@ -1,19 +1,29 @@
-// ====== Haupt-Variablen ======
+// ======= Spielvariablen =======
 let canvas, ctx, animationId;
 let bird = {}, pipes = [];
 let gameActive = false, gameOverState = false;
-let gravity = 0.26, jump = -5.1;
-let score = 0, speed = 2.2, birdColor = "#FFD700";
-let pipeGap = 220, pipeWidth = 54, pipeMin = 50, pipeMax = 380;
-let speedIncrease = 0.048, minGap = 110, maxSpeed = 4.5;
-let lastPipeTime = 0, pipeInterval = 1480, frameTime = 0;
+let gravity = 0.25, jump = -4.9;
+let score = 0, speed = 2.1, birdColor = "#FFD700";
+let pipeGap = 200, pipeWidth = 54, pipeMin = 40, pipeMax = 410;
+let speedIncrease = 0.038, minGap = 110, maxSpeed = 4.2;
+let lastPipeTime = 0, pipeInterval = 1450, frameTime = 0;
 let flapAnimation = 0;
 let lives = 3;
 let invulnerable = false;
+let selectedLives = 3;
 
-// ====== Setup & Start ======
+// ======= Auswahl für Leben vor Spielstart =======
+const livesRange = document.getElementById('livesRange');
+const livesValue = document.getElementById('livesValue');
+livesRange.addEventListener('input', function() {
+    livesValue.textContent = livesRange.value;
+    selectedLives = parseInt(livesRange.value, 10);
+});
+
+// ======= Setup & Start =======
 document.getElementById('startBtn').onclick = function() {
     birdColor = document.getElementById('birdColor').value;
+    lives = selectedLives;
     document.getElementById('setup').style.display = 'none';
     document.getElementById('game').style.display = 'block';
     document.getElementById('restartBtn').style.display = 'none';
@@ -22,11 +32,12 @@ document.getElementById('startBtn').onclick = function() {
 
 document.getElementById('restartBtn').onclick = function() {
     score = 0;
+    lives = selectedLives;
     document.getElementById('score').textContent = score;
     startGame();
 };
 
-// ====== Steuerung ======
+// ======= Steuerung =======
 function jumpBird() {
     if (!gameActive) return;
     bird.vy = jump;
@@ -50,20 +61,19 @@ document.addEventListener('keydown', e => {
     if ((e.code === "Space" || e.key === " ") && gameActive) jumpBird();
 });
 
-// ====== Game-Loop & Logik ======
+// ======= Game-Loop & Logik =======
 function startGame() {
     canvas = document.getElementById('gameCanvas');
     ctx = canvas.getContext('2d');
     pipes = [];
-    bird = { x: 90, y: canvas.height / 2 - 25, w: 36, h: 36, vy: 0 };
+    bird = { x: 70, y: canvas.height / 2 - 18, w: 34, h: 34, vy: 0 };
     gameActive = true;
     gameOverState = false;
     score = 0;
-    speed = 2.2;
-    pipeGap = 220;
+    speed = 2.1;
+    pipeGap = 200;
     lastPipeTime = 0;
-    pipeInterval = 1480;
-    lives = 3;
+    pipeInterval = 1450;
     invulnerable = false;
     document.getElementById('score').textContent = score;
     updateLivesDisplay();
@@ -72,7 +82,7 @@ function startGame() {
 }
 
 function createPipe() {
-    let minH = 40; // Pipe minimal
+    let minH = 38;
     let maxH = canvas.height - pipeGap - minH;
     let gapY = Math.floor(Math.random() * (maxH - minH + 1)) + minH;
     return { x: canvas.width, gapY: gapY, scored: false };
@@ -103,7 +113,7 @@ function update(dt) {
             // Schwierigkeit steigern
             if (score % 3 === 0 && speed < maxSpeed) {
                 speed += speedIncrease;
-                pipeGap = Math.max(pipeGap - 11, minGap);
+                pipeGap = Math.max(pipeGap - 10, minGap);
                 pipeInterval = Math.max(pipeInterval - 55, 900);
             }
         }
@@ -113,7 +123,7 @@ function update(dt) {
         }
     }
 
-    // Kollisionen prüfen (erst nach 3 Crashs wirklich Game Over)
+    // Kollisionen prüfen (erst nach X Crashs wirklich Game Over)
     if (!invulnerable) {
         let hit = false;
         for (let pipe of pipes) {
@@ -134,10 +144,8 @@ function handleHit() {
         return;
     }
     invulnerable = true;
-    // Bird wieder in Mitte, nach unten/unten alles stoppen, Pipes kurz zurück
-    bird.y = canvas.height / 2 - 25;
+    bird.y = canvas.height / 2 - 18;
     bird.vy = 0;
-    // Bird blinkt und ist 1,2 Sek. unverwundbar
     setTimeout(() => { invulnerable = false; }, 1200);
 }
 
@@ -161,7 +169,7 @@ function draw() {
 
     // Bird (Pixel-Art-Look), bei Unverwundbarkeit halb durchsichtig
     ctx.save();
-    if (invulnerable) ctx.globalAlpha = 0.45 + 0.22 * Math.sin(performance.now()/110);
+    if (invulnerable) ctx.globalAlpha = 0.42 + 0.25 * Math.sin(performance.now()/90);
     drawBird(ctx, bird.x, bird.y, birdColor, flapAnimation);
     ctx.restore();
 
@@ -175,13 +183,13 @@ function draw() {
         ctx.fillStyle = "rgba(0,0,0,0.73)";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = "#fff";
-        ctx.font = "bold 36px monospace";
+        ctx.font = "bold 32px monospace";
         ctx.textAlign = "center";
-        ctx.fillText("GAME OVER", canvas.width / 2, 260);
-        ctx.font = "22px monospace";
-        ctx.fillText("Score: " + score, canvas.width / 2, 304);
-        ctx.font = "16px monospace";
-        ctx.fillText("Tippe 'Nochmal spielen'", canvas.width / 2, 340);
+        ctx.fillText("GAME OVER", canvas.width / 2, 240);
+        ctx.font = "20px monospace";
+        ctx.fillText("Score: " + score, canvas.width / 2, 282);
+        ctx.font = "15px monospace";
+        ctx.fillText("Tippe 'Nochmal spielen'", canvas.width / 2, 315);
     }
 }
 
@@ -195,7 +203,7 @@ function loop(ts) {
     if (gameActive) requestAnimationFrame(loop);
 }
 
-// ====== Hilfsfunktionen ======
+// ======= Hilfsfunktionen =======
 function collides(a, x, y, w, h) {
     return a.x < x + w && a.x + a.w > x && a.y < y + h && a.y + a.h > y;
 }
@@ -206,7 +214,7 @@ function endGame() {
     document.getElementById('restartBtn').style.display = 'block';
 }
 
-// ====== Pipes im Pixel-Look ======
+// ======= Pipes im Pixel-Look =======
 function drawPipe(ctx, x, y, w, h, color, up) {
     ctx.save();
     ctx.beginPath();
@@ -219,41 +227,41 @@ function drawPipe(ctx, x, y, w, h, color, up) {
 
     // Pixel-Highlight
     ctx.fillStyle = "#fff2";
-    if (up) ctx.fillRect(x + 6, y + h - 14, w - 12, 7);
+    if (up) ctx.fillRect(x + 6, y + h - 13, w - 12, 7);
     else ctx.fillRect(x + 6, y, w - 12, 7);
 
     ctx.restore();
 }
 
-// ====== Bird im Pixel-Look ======
+// ======= Bird im Pixel-Look =======
 function drawBird(ctx, x, y, color, flap) {
     ctx.save();
     ctx.beginPath();
     ctx.fillStyle = color;
     ctx.strokeStyle = "#222";
     ctx.lineWidth = 2.1;
-    ctx.arc(x + 18, y + 18, 15, 0, 2 * Math.PI);
+    ctx.arc(x + 17, y + 17, 14, 0, 2 * Math.PI);
     ctx.fill();
     ctx.stroke();
 
     // Auge
     ctx.beginPath();
-    ctx.arc(x + 25, y + 13, 3.9, 0, 2 * Math.PI);
+    ctx.arc(x + 23, y + 11, 3.6, 0, 2 * Math.PI);
     ctx.fillStyle = "#fff";
     ctx.fill();
     ctx.beginPath();
-    ctx.arc(x + 26.6, y + 13, 1.4, 0, 2 * Math.PI);
+    ctx.arc(x + 25, y + 12, 1.4, 0, 2 * Math.PI);
     ctx.fillStyle = "#222";
     ctx.fill();
 
     // Flügel (simple Animation)
     ctx.save();
-    ctx.translate(x + 14, y + 22);
-    ctx.rotate(flap > 0 ? -0.5 : 0.32);
+    ctx.translate(x + 13, y + 21);
+    ctx.rotate(flap > 0 ? -0.52 : 0.27);
     ctx.beginPath();
     ctx.moveTo(0, 0);
-    ctx.lineTo(16, 6);
-    ctx.lineTo(8, 18);
+    ctx.lineTo(13, 5);
+    ctx.lineTo(8, 15);
     ctx.closePath();
     ctx.fillStyle = "#eee9";
     ctx.fill();
@@ -261,9 +269,9 @@ function drawBird(ctx, x, y, color, flap) {
 
     // Schnabel
     ctx.beginPath();
-    ctx.moveTo(x + 34, y + 18);
-    ctx.lineTo(x + 43, y + 20);
-    ctx.lineTo(x + 34, y + 23);
+    ctx.moveTo(x + 31, y + 16);
+    ctx.lineTo(x + 38, y + 18);
+    ctx.lineTo(x + 31, y + 20);
     ctx.closePath();
     ctx.fillStyle = "#ffcb29";
     ctx.fill();
@@ -271,17 +279,17 @@ function drawBird(ctx, x, y, color, flap) {
     ctx.restore();
 }
 
-// ====== Pixelwolken ======
+// ======= Pixelwolken =======
 function drawClouds(ctx) {
     ctx.save();
-    ctx.globalAlpha = 0.13;
+    ctx.globalAlpha = 0.12;
     for (let i = 0; i < 3; i++) {
         ctx.beginPath();
-        let cx = 90 + i * 130;
-        let cy = 68 + Math.sin(performance.now() / 1700 + i) * 7;
-        ctx.arc(cx, cy, 30, 0, 2 * Math.PI);
-        ctx.arc(cx + 24, cy + 13, 16, 0, 2 * Math.PI);
-        ctx.arc(cx - 20, cy + 9, 14, 0, 2 * Math.PI);
+        let cx = 75 + i * 88;
+        let cy = 56 + Math.sin(performance.now() / 1500 + i) * 8;
+        ctx.arc(cx, cy, 23, 0, 2 * Math.PI);
+        ctx.arc(cx + 17, cy + 8, 12, 0, 2 * Math.PI);
+        ctx.arc(cx - 15, cy + 7, 10, 0, 2 * Math.PI);
         ctx.fillStyle = "#fff";
         ctx.fill();
     }
