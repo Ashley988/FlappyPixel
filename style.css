@@ -37,7 +37,7 @@ body {
 
 #gameCanvas {
     margin-top: 18px;
-    background: #59d0ff;   /* Himmelblau */
+    background: #cae6fb;   /* Pastellblau als Fallback */
     border: 3px solid #fff;
     border-radius: 18px;
     box-shadow: 0 0 14px #000a;
@@ -48,10 +48,23 @@ body {
 }
 
 #scoreBox {
-    font-size: 1.32em;
+    font-size: 1.24em;
     margin: 12px 0 7px 0;
     letter-spacing: 1px;
     text-shadow: 0 2px 5px #000a;
+    text-align: center;
+}
+#scoreBox span {
+    display: inline-block;
+    min-width: 96px;
+}
+#highscoreBox {
+    display: block;
+    margin-top: 5px;
+    color: #11aaff;
+    font-size: 0.97em;
+    letter-spacing: 1px;
+    text-shadow: 0 1px 5px #fff7;
 }
 
 #controller {
