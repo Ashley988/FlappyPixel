@@ -105,13 +105,15 @@ function startGame() {
     highscore = Number(localStorage.getItem('aslis_flappy_highscore') || 0);
     updateHighscoreDisplay();
 
-    // Sterne für Nachthimmel neu generieren (immer gleich pro Spielrunde)
+    // Sterne für Nachthimmel neu generieren (immer aktuell an Canvas-Größe)
     if (bgMode === "nacht") {
         stars = [];
+        const w = canvas.width;
+        const h = canvas.height;
         for (let i = 0; i < STAR_COUNT; i++) {
             stars.push({
-                x: Math.random() * 340,
-                y: Math.random() * 570,
+                x: Math.random() * w,
+                y: Math.random() * h,
                 r: Math.random() < 0.14 ? 1.7 : 1.1,
                 color: Math.random() < 0.20 ? "#ffe98f" : "#fff"
             });
@@ -201,7 +203,7 @@ function draw() {
     ctx.fillStyle = bgColors[bgMode];
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Wolken oder Sterne
+    // Sterne bei Nacht, Wolken sonst
     if (bgMode === "nacht") {
         drawStars(ctx);
     } else {
@@ -244,14 +246,16 @@ function drawIdleScreen() {
     ctx.fillStyle = bgColors[bgMode];
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Wolken oder Sterne
+    // Sterne bei Nacht, Wolken sonst
     if (bgMode === "nacht") {
-        // Sterne neu für Idle generieren (jedes Mal neu)
+        // Sterne immer NEU für Idle generieren (jedes Mal neu)
         stars = [];
+        const w = canvas.width;
+        const h = canvas.height;
         for (let i = 0; i < STAR_COUNT; i++) {
             stars.push({
-                x: Math.random() * 340,
-                y: Math.random() * 570,
+                x: Math.random() * w,
+                y: Math.random() * h,
                 r: Math.random() < 0.14 ? 1.7 : 1.1,
                 color: Math.random() < 0.20 ? "#ffe98f" : "#fff"
             });
