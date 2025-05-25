@@ -30,6 +30,7 @@ function jumpBird() {
     bird.vy = jump;
     flapAnimation = 7; // Flügel schlägt hoch
 }
+
 // Touch und Klick auf den Button
 const jumpBtn = document.getElementById('jumpBtn');
 jumpBtn.addEventListener('touchstart', function(e) {
@@ -38,7 +39,7 @@ jumpBtn.addEventListener('touchstart', function(e) {
 }, {passive: false});
 jumpBtn.addEventListener('mousedown', jumpBird);
 
-// (Optional: Tap aufs Canvas als Sprung)
+// Tap aufs Canvas (optional, macht mobile angenehmer)
 document.getElementById('gameCanvas').addEventListener('touchstart', function(e){
     e.preventDefault();
     jumpBird();
@@ -157,4 +158,101 @@ function loop(ts) {
     let now = performance.now();
     let dt = now - frameTime;
     frameTime = now;
-    update(dt
+    update(dt);
+    draw();
+    if (gameActive) requestAnimationFrame(loop);
+}
+
+// ====== Hilfsfunktionen ======
+function collides(a, x, y, w, h) {
+    return a.x < x + w && a.x + a.w > x && a.y < y + h && a.y + a.h > y;
+}
+
+function endGame() {
+    gameActive = false;
+    gameOverState = true;
+    document.getElementById('restartBtn').style.display = 'block';
+}
+
+// ====== Pipes im Pixel-Look ======
+function drawPipe(ctx, x, y, w, h, color, up) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.fillStyle = color;
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 2;
+    ctx.rect(x, y, w, h);
+    ctx.fill();
+    ctx.stroke();
+
+    // Pixel-Highlight
+    ctx.fillStyle = "#fff2";
+    if (up) ctx.fillRect(x + 6, y + h - 14, w - 12, 7);
+    else ctx.fillRect(x + 6, y, w - 12, 7);
+
+    ctx.restore();
+}
+
+// ====== Bird im Pixel-Look ======
+function drawBird(ctx, x, y, color, flap) {
+    // Körper
+    ctx.save();
+    ctx.beginPath();
+    ctx.fillStyle = color;
+    ctx.strokeStyle = "#222";
+    ctx.lineWidth = 2.1;
+    ctx.arc(x + 15, y + 15, 13, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.stroke();
+
+    // Auge
+    ctx.beginPath();
+    ctx.arc(x + 21, y + 12, 3.3, 0, 2 * Math.PI);
+    ctx.fillStyle = "#fff";
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(x + 22, y + 12, 1.4, 0, 2 * Math.PI);
+    ctx.fillStyle = "#222";
+    ctx.fill();
+
+    // Flügel (simple Animation)
+    ctx.save();
+    ctx.translate(x + 12, y + 18);
+    ctx.rotate(flap > 0 ? -0.5 : 0.32);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(12, 5);
+    ctx.lineTo(6, 15);
+    ctx.closePath();
+    ctx.fillStyle = "#eee9";
+    ctx.fill();
+    ctx.restore();
+
+    // Schnabel
+    ctx.beginPath();
+    ctx.moveTo(x + 28, y + 15);
+    ctx.lineTo(x + 35, y + 17);
+    ctx.lineTo(x + 28, y + 19);
+    ctx.closePath();
+    ctx.fillStyle = "#ffcb29";
+    ctx.fill();
+
+    ctx.restore();
+}
+
+// ====== Pixelwolken ======
+function drawClouds(ctx) {
+    ctx.save();
+    ctx.globalAlpha = 0.16;
+    for (let i = 0; i < 3; i++) {
+        ctx.beginPath();
+        let cx = 60 + i * 100;
+        let cy = 54 + Math.sin(performance.now() / 1600 + i) * 6;
+        ctx.arc(cx, cy, 24, 0, 2 * Math.PI);
+        ctx.arc(cx + 17, cy + 8, 12, 0, 2 * Math.PI);
+        ctx.arc(cx - 13, cy + 7, 11, 0, 2 * Math.PI);
+        ctx.fillStyle = "#fff";
+        ctx.fill();
+    }
+    ctx.restore();
+}
