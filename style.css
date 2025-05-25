@@ -21,26 +21,26 @@ body {
 }
 
 #gameCanvas {
-    margin-top: 18px;
+    margin-top: 22px;
     background: #222;
     border: 3px solid #fff;
-    border-radius: 18px;
-    box-shadow: 0 0 16px #000a;
+    border-radius: 22px;
+    box-shadow: 0 0 22px #000a;
     image-rendering: pixelated;
     touch-action: none;
-    max-width: 97vw;
-    height: auto;
+    max-width: 99vw;
+    max-height: 85vh;
 }
 
 #scoreBox {
-    font-size: 1.4em;
-    margin: 10px 0 6px 0;
+    font-size: 1.6em;
+    margin: 14px 0 10px 0;
     letter-spacing: 1px;
     text-shadow: 0 2px 5px #000a;
 }
 
 #controller {
-    margin-top: 10px;
+    margin-top: 12px;
     margin-bottom: 10px;
     display: flex;
     justify-content: center;
@@ -56,60 +56,60 @@ body {
     border-radius: 50%;
     box-shadow: 0 4px 15px #0007;
     transition: transform 0.12s;
-    width: 62px;
-    height: 62px;
+    width: 66px;
+    height: 66px;
     touch-action: manipulation;
     -webkit-user-select: none;
     user-select: none;
 }
 #jumpBtn:active {
-    transform: scale(0.93);
-    box-shadow: 0 2px 6px #000b;
+    transform: scale(0.92);
+    box-shadow: 0 2px 7px #000b;
 }
 
 button {
     background: #333;
     color: #fff;
-    font-size: 1.05em;
-    border: 1px solid #fff;
+    font-size: 1.13em;
+    border: 1.5px solid #fff;
     border-radius: 7px;
-    padding: 11px 25px;
-    margin-top: 8px;
+    padding: 11px 26px;
+    margin-top: 9px;
     cursor: pointer;
-    transition: background 0.16s;
+    transition: background 0.15s;
 }
 button:hover {
     background: #555;
 }
 
 label {
-    font-size: 1.1em;
-    margin-bottom: 13px;
+    font-size: 1.13em;
+    margin-bottom: 15px;
     display: inline-block;
 }
 
 input[type="color"] {
-    margin-left: 6px;
+    margin-left: 8px;
     border: none;
-    width: 36px;
-    height: 28px;
+    width: 38px;
+    height: 29px;
     background: none;
     cursor: pointer;
     border-radius: 6px;
 }
 
-@media (max-width: 500px) {
+@media (max-width: 600px) {
     #gameCanvas {
-        width: 97vw !important;
-        height: 72vw !important;
-        max-width: 330px;
-        max-height: 480px;
+        width: 98vw !important;
+        height: 68vw !important;
+        max-width: 430px;
+        max-height: 620px;
     }
     #gameFrame {
         width: 100vw;
     }
     #controller {
-        margin-top: 9px;
+        margin-top: 10px;
         margin-bottom: 7px;
     }
 }
