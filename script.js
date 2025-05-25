@@ -13,11 +13,16 @@ let invulnerable = false;
 let selectedLives = 3;
 let highscore = 0;
 let bgMode = 'fruehling';
+
 const bgColors = {
     herbst: "#ffb86c",     // Orange (Herbst)
     nacht: "#112233",      // Dunkelblau (Nachts)
     fruehling: "#cae6fb"   // Pastellblau (Frühling)
 };
+
+// Sterne für Nachthimmel
+let stars = [];
+const STAR_COUNT = 38;
 
 // ======= Leben-Auswahl vor Spielstart =======
 const livesRange = document.getElementById('livesRange');
@@ -99,6 +104,19 @@ function startGame() {
     updateLivesDisplay();
     highscore = Number(localStorage.getItem('aslis_flappy_highscore') || 0);
     updateHighscoreDisplay();
+
+    // Sterne für Nachthimmel neu generieren (immer gleich pro Spielrunde)
+    if (bgMode === "nacht") {
+        stars = [];
+        for (let i = 0; i < STAR_COUNT; i++) {
+            stars.push({
+                x: Math.random() * 340,
+                y: Math.random() * 570,
+                r: Math.random() < 0.14 ? 1.7 : 1.1,
+                color: Math.random() < 0.20 ? "#ffe98f" : "#fff"
+            });
+        }
+    }
     drawIdleScreen();
 }
 
@@ -179,12 +197,14 @@ function updateHighscoreDisplay() {
 }
 
 function draw() {
-    // Hintergrund je nach Modus
+    // Hintergrund
     ctx.fillStyle = bgColors[bgMode];
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Wolken (weiß, nicht bei "Nachts")
-    if (bgMode !== "nacht") {
+    // Wolken oder Sterne
+    if (bgMode === "nacht") {
+        drawStars(ctx);
+    } else {
         drawClouds(ctx);
     }
 
@@ -224,8 +244,20 @@ function drawIdleScreen() {
     ctx.fillStyle = bgColors[bgMode];
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Wolken (außer Nachts)
-    if (bgMode !== "nacht") {
+    // Wolken oder Sterne
+    if (bgMode === "nacht") {
+        // Sterne neu für Idle generieren (jedes Mal neu)
+        stars = [];
+        for (let i = 0; i < STAR_COUNT; i++) {
+            stars.push({
+                x: Math.random() * 340,
+                y: Math.random() * 570,
+                r: Math.random() < 0.14 ? 1.7 : 1.1,
+                color: Math.random() < 0.20 ? "#ffe98f" : "#fff"
+            });
+        }
+        drawStars(ctx);
+    } else {
         drawClouds(ctx);
     }
 
@@ -352,4 +384,17 @@ function drawClouds(ctx) {
         ctx.fill();
     }
     ctx.restore();
+}
+
+// ======= Sternenhimmel =======
+function drawStars(ctx) {
+    if (bgMode !== "nacht") return;
+    for (let star of stars) {
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.r, 0, 2 * Math.PI);
+        ctx.fillStyle = star.color;
+        ctx.globalAlpha = 0.93 + Math.sin(performance.now()/450 + star.x + star.y) * 0.16;
+        ctx.fill();
+    }
+    ctx.globalAlpha = 1;
 }
