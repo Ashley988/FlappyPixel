@@ -1,19 +1,17 @@
-// ======= GRUNDEINSTELLUNGEN =======
+// ====== Haupt-Variablen ======
 let canvas, ctx, animationId;
 let bird = {}, pipes = [];
-let gameActive = false;
-let gravity = 0.5, jump = -8;
-let score = 0, speed = 2, birdColor = "#FFD700";
-let pipeGap = 110, pipeWidth = 45, pipeMin = 60, pipeMax = 320;
+let gameActive = false, gameOverState = false;
+let gravity = 0.34, jump = -7.2;
+let score = 0, speed = 2.1, birdColor = "#FFD700";
+let pipeGap = 120, pipeWidth = 48, pipeMin = 60, pipeMax = 295;
+let speedIncrease = 0.055, minGap = 80, maxSpeed = 5.2;
+let lastPipeTime = 0, pipeInterval = 1240, frameTime = 0;
+let flapAnimation = 0;
 
-// ======= SETUP-BEREICH =======
+// ====== Setup & Start ======
 document.getElementById('startBtn').onclick = function() {
-    // Werte auslesen
     birdColor = document.getElementById('birdColor').value;
-    let speedFactor = +document.getElementById('speed').value;
-    speed = 1 + speedFactor * 1.5; // Bereich: 2.5 bis 8
-
-    // Anzeigen wechseln
     document.getElementById('setup').style.display = 'none';
     document.getElementById('game').style.display = 'block';
     document.getElementById('restartBtn').style.display = 'none';
@@ -26,113 +24,137 @@ document.getElementById('restartBtn').onclick = function() {
     startGame();
 };
 
-// ======= GAME-LOGIK =======
+// ====== Steuerung ======
+function jumpBird() {
+    if (!gameActive) return;
+    bird.vy = jump;
+    flapAnimation = 7; // Flügel schlägt hoch
+}
+// Touch und Klick auf den Button
+const jumpBtn = document.getElementById('jumpBtn');
+jumpBtn.addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    jumpBird();
+}, {passive: false});
+jumpBtn.addEventListener('mousedown', jumpBird);
+
+// (Optional: Tap aufs Canvas als Sprung)
+document.getElementById('gameCanvas').addEventListener('touchstart', function(e){
+    e.preventDefault();
+    jumpBird();
+}, {passive: false});
+document.getElementById('gameCanvas').addEventListener('mousedown', jumpBird);
+
+// Tastatur (Space) für Desktop
+document.addEventListener('keydown', e => {
+    if ((e.code === "Space" || e.key === " ") && gameActive) jumpBird();
+});
+
+// ====== Game-Loop & Logik ======
 function startGame() {
     canvas = document.getElementById('gameCanvas');
     ctx = canvas.getContext('2d');
     pipes = [];
-    bird = { x: 60, y: 240, w: 24, h: 24, vy: 0 };
+    bird = { x: 70, y: 220, w: 30, h: 30, vy: 0 };
     gameActive = true;
+    gameOverState = false;
     score = 0;
+    speed = 2.1;
+    pipeGap = 120;
+    lastPipeTime = 0;
+    pipeInterval = 1240;
     document.getElementById('score').textContent = score;
-
-    // Pipes initial erstellen
-    for (let i = 0; i < 3; i++) {
-        pipes.push(createPipe(320 + i * 150));
-    }
-
-    // Steuerung
-    window.onkeydown = function(e) {
-        if (e.code === "Space" || e.key === " ") jumpBird();
-    };
-    canvas.onclick = jumpBird;
-    canvas.ontouchstart = jumpBird;
-
-    loop();
+    frameTime = performance.now();
+    requestAnimationFrame(loop);
 }
 
-function createPipe(x) {
+function createPipe() {
     let gapY = Math.floor(Math.random() * (pipeMax - pipeMin)) + pipeMin;
-    return { x: x, gapY: gapY };
+    return { x: canvas.width, gapY: gapY, scored: false };
 }
 
-function jumpBird() {
+function update(dt) {
     if (!gameActive) return;
-    bird.vy = jump;
-}
 
-function loop() {
-    animationId = requestAnimationFrame(loop);
-    update();
-    draw();
-}
-
-function update() {
-    // Bird Bewegung
     bird.vy += gravity;
     bird.y += bird.vy;
 
-    // Pipes verschieben und prüfen
+    // Flügelanimation
+    if (flapAnimation > 0) flapAnimation--;
+
+    // Pipes erzeugen
+    if (performance.now() - lastPipeTime > pipeInterval) {
+        pipes.push(createPipe());
+        lastPipeTime = performance.now();
+    }
+    // Pipes bewegen und prüfen
     for (let i = pipes.length - 1; i >= 0; i--) {
         pipes[i].x -= speed;
-
-        // Pipe neu generieren, wenn vorbei
-        if (pipes[i].x + pipeWidth < 0) {
-            pipes.splice(i, 1);
-            pipes.push(createPipe(320));
+        // Score + Schwierigkeit
+        if (!pipes[i].scored && pipes[i].x + pipeWidth < bird.x) {
+            pipes[i].scored = true;
             score++;
             document.getElementById('score').textContent = score;
+            // Schwierigkeit steigern
+            if (score % 2 === 0 && speed < maxSpeed) {
+                speed += speedIncrease;
+                pipeGap = Math.max(pipeGap - 7, minGap);
+                pipeInterval = Math.max(pipeInterval - 42, 830);
+            }
+        }
+        // Entferne Pipes, die links raus sind
+        if (pipes[i].x + pipeWidth < 0) {
+            pipes.splice(i, 1);
         }
     }
 
-    // Kollision prüfen
+    // Kollisionen prüfen
     for (let pipe of pipes) {
-        // Obere Pipe
-        if (collides(bird, pipe.x, 0, pipeWidth, pipe.gapY)) gameOver();
-        // Untere Pipe
-        if (collides(bird, pipe.x, pipe.gapY + pipeGap, pipeWidth, 480 - pipe.gapY - pipeGap)) gameOver();
+        if (collides(bird, pipe.x, 0, pipeWidth, pipe.gapY)) endGame();
+        if (collides(bird, pipe.x, pipe.gapY + pipeGap, pipeWidth, canvas.height - pipe.gapY - pipeGap)) endGame();
     }
-
-    // Boden oder Decke
-    if (bird.y < 0 || bird.y + bird.h > 480) gameOver();
+    // Unten/Oben raus
+    if (bird.y < 0 || bird.y + bird.h > canvas.height) endGame();
 }
 
 function draw() {
     // Hintergrund
-    ctx.fillStyle = "#222";
-    ctx.fillRect(0, 0, 320, 480);
+    ctx.fillStyle = "#111";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Bird (Pixel-Look)
-    ctx.fillStyle = birdColor;
-    ctx.fillRect(bird.x, bird.y, bird.w, bird.h);
-    ctx.strokeStyle = "#000";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(bird.x, bird.y, bird.w, bird.h);
+    // Dezente Pixelwolken
+    drawClouds(ctx);
 
-    // Pipes (rot)
-    ctx.fillStyle = "#e74c3c";
+    // Pipes (rot, mit Pixelrand)
     for (let pipe of pipes) {
-        // Oben
-        ctx.fillRect(pipe.x, 0, pipeWidth, pipe.gapY);
-        // Unten
-        ctx.fillRect(pipe.x, pipe.gapY + pipeGap, pipeWidth, 480 - pipe.gapY - pipeGap);
+        drawPipe(ctx, pipe.x, 0, pipeWidth, pipe.gapY, "#f44", true);
+        drawPipe(ctx, pipe.x, pipe.gapY + pipeGap, pipeWidth, canvas.height - pipe.gapY - pipeGap, "#f44", false);
+    }
+
+    // Bird (Pixel-Art-Look)
+    drawBird(ctx, bird.x, bird.y, birdColor, flapAnimation);
+
+    // Rahmen außen
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(0, 0, canvas.width, canvas.height);
+
+    // Game Over Overlay
+    if (gameOverState) {
+        ctx.fillStyle = "rgba(0,0,0,0.74)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#fff";
+        ctx.font = "bold 28px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText("GAME OVER", canvas.width / 2, 210);
+        ctx.font = "18px monospace";
+        ctx.fillText("Score: " + score, canvas.width / 2, 250);
     }
 }
 
-function collides(a, x, y, w, h) {
-    return a.x < x + w && a.x + a.w > x && a.y < y + h && a.y + a.h > y;
-}
-
-function gameOver() {
-    gameActive = false;
-    cancelAnimationFrame(animationId);
-    ctx.fillStyle = "rgba(0,0,0,0.6)";
-    ctx.fillRect(0, 0, 320, 480);
-    ctx.fillStyle = "#fff";
-    ctx.font = "bold 24px monospace";
-    ctx.textAlign = "center";
-    ctx.fillText("GAME OVER", 160, 220);
-    ctx.font = "16px monospace";
-    ctx.fillText("Score: " + score, 160, 250);
-    document.getElementById('restartBtn').style.display = 'inline-block';
-}
+function loop(ts) {
+    if (!gameActive && !gameOverState) return;
+    let now = performance.now();
+    let dt = now - frameTime;
+    frameTime = now;
+    update(dt
