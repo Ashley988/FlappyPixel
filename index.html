@@ -1,51 +1,26 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tic-Tac-Toe Spiel</title>
-  <!-- Verknüpfung der CSS-Datei -->
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <title>Pixel Flappy Bird</title>
+    <link rel="stylesheet" href="flappy.css">
 </head>
 <body>
-  <!-- Start-Bildschirm mit schwarzem Hintergrund und Start-Button -->
-  <div id="start-screen">
-    <button id="start-btn">Start</button>
-  </div>
-
-  <!-- Auswahl-Bildschirm für die drei Spielmodi (standardmäßig versteckt) -->
-  <div id="mode-selection" style="display: none;">
-    <h2>Spielmodus wählen:</h2>
-    <button id="mode-bot">Gegen Computer</button>
-    <button id="mode-local">Lokal mit Freund</button>
-    <button id="mode-online">Online mit Freund</button>
-  </div>
-
-  <!-- Spielbereich (Tic-Tac-Toe Feld, Statusanzeige, Reset-Button), anfangs versteckt -->
-  <div id="game-container" style="display: none;">
-    <!-- Statusanzeige für Spielinformationen (aktueller Spieler, Gewinner, etc.) -->
-    <div id="status"></div>
-    <!-- Tic-Tac-Toe 3x3 Spielfeld -->
-    <div id="board">
-      <!-- Neun Zellen des Spielfelds mit Index 0 bis 8 -->
-      <div class="cell" data-index="0"></div>
-      <div class="cell" data-index="1"></div>
-      <div class="cell" data-index="2"></div>
-      <div class="cell" data-index="3"></div>
-      <div class="cell" data-index="4"></div>
-      <div class="cell" data-index="5"></div>
-      <div class="cell" data-index="6"></div>
-      <div class="cell" data-index="7"></div>
-      <div class="cell" data-index="8"></div>
+    <div id="setup">
+        <h2>Flappy Bird: Einstellungen</h2>
+        <label>Farbe des Birds:
+            <input type="color" id="birdColor" value="#FFD700">
+        </label><br>
+        <label>Geschwindigkeit (1 = langsam, 5 = schnell):
+            <input type="range" id="speed" min="1" max="5" value="3">
+        </label><br>
+        <button id="startBtn">Spiel starten</button>
     </div>
-    <!-- Button, um ein neues Spiel zu starten (zurück zur Modusauswahl) -->
-    <button id="reset-btn">Neues Spiel</button>
-  </div>
-
-  <!-- Firebase SDKs einbinden (nur Firebase, keine weiteren Frameworks) -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-  <!-- Haupt-JavaScript-Datei einbinden -->
-  <script src="script.js"></script>
+    <div id="game" style="display:none;">
+        <canvas id="gameCanvas" width="320" height="480"></canvas>
+        <div id="scoreBox">Score: <span id="score">0</span></div>
+        <button id="restartBtn" style="display:none;">Nochmal spielen</button>
+    </div>
+    <script src="flappy.js"></script>
 </body>
 </html>
