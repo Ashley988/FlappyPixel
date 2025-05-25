@@ -1,7 +1,7 @@
 // ========== SPIELVARIABLEN ==========
 let canvas, ctx, animationId;
 let bird = {}, pipes = [];
-let gameActive = false, gameOverState = false;
+let gameActive = false, gameOverState = false, gameStarted = false;
 let gravity = 0.23, jump = -4.6;
 let score = 0, speed = 1.85, birdColor = "#FFD700";
 let pipeGap = 205, pipeWidth = 52, pipeMin = 32, pipeMax = 410;
@@ -12,6 +12,12 @@ let lives = 3;
 let invulnerable = false;
 let selectedLives = 3;
 let highscore = 0;
+let bgMode = 'fruehling';
+const bgColors = {
+    herbst: "#ffb86c",     // Orange (Herbst)
+    nacht: "#112233",      // Dunkelblau (Nachts)
+    fruehling: "#cae6fb"   // Pastellblau (Frühling)
+};
 
 // ======= Leben-Auswahl vor Spielstart =======
 const livesRange = document.getElementById('livesRange');
@@ -26,6 +32,7 @@ livesRange.addEventListener('input', function() {
 // ======= Setup & Start =======
 document.getElementById('startBtn').onclick = function() {
     birdColor = document.getElementById('birdColor').value;
+    bgMode = document.getElementById('bgSelect').value;
     lives = selectedLives;
     document.getElementById('setup').style.display = 'none';
     document.getElementById('game').style.display = 'block';
@@ -41,8 +48,17 @@ document.getElementById('restartBtn').onclick = function() {
 };
 
 // ======= Steuerung =======
+function firstJumpStart() {
+    if (!gameStarted && !gameOverState) {
+        gameStarted = true;
+        frameTime = performance.now();
+        requestAnimationFrame(loop);
+    }
+    jumpBird();
+}
+
 function jumpBird() {
-    if (!gameActive) return;
+    if (!gameStarted || !gameActive) return;
     bird.vy = jump;
     flapAnimation = 7;
 }
@@ -50,18 +66,18 @@ function jumpBird() {
 const jumpBtn = document.getElementById('jumpBtn');
 jumpBtn.addEventListener('touchstart', function(e) {
     e.preventDefault();
-    jumpBird();
+    firstJumpStart();
 }, {passive: false});
-jumpBtn.addEventListener('mousedown', jumpBird);
+jumpBtn.addEventListener('mousedown', firstJumpStart);
 
 document.getElementById('gameCanvas').addEventListener('touchstart', function(e){
     e.preventDefault();
-    jumpBird();
+    firstJumpStart();
 }, {passive: false});
-document.getElementById('gameCanvas').addEventListener('mousedown', jumpBird);
+document.getElementById('gameCanvas').addEventListener('mousedown', firstJumpStart);
 
 document.addEventListener('keydown', e => {
-    if ((e.code === "Space" || e.key === " ") && gameActive) jumpBird();
+    if ((e.code === "Space" || e.key === " ")) firstJumpStart();
 });
 
 // ======= Game-Loop & Logik =======
@@ -72,6 +88,7 @@ function startGame() {
     bird = { x: 70, y: canvas.height / 2 - 18, w: 34, h: 34, vy: 0 };
     gameActive = true;
     gameOverState = false;
+    gameStarted = false;
     score = 0;
     speed = 1.85;
     pipeGap = 205;
@@ -82,8 +99,7 @@ function startGame() {
     updateLivesDisplay();
     highscore = Number(localStorage.getItem('aslis_flappy_highscore') || 0);
     updateHighscoreDisplay();
-    frameTime = performance.now();
-    requestAnimationFrame(loop);
+    drawIdleScreen();
 }
 
 function createPipe() {
@@ -94,7 +110,7 @@ function createPipe() {
 }
 
 function update(dt) {
-    if (!gameActive) return;
+    if (!gameActive || !gameStarted) return;
 
     bird.vy += gravity;
     bird.y += bird.vy;
@@ -163,12 +179,14 @@ function updateHighscoreDisplay() {
 }
 
 function draw() {
-    // *** Pastellblauer Himmel ***
-    ctx.fillStyle = "#cae6fb"; // Pastell-Himmelblau
+    // Hintergrund je nach Modus
+    ctx.fillStyle = bgColors[bgMode];
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Wolken (reinweiß)
-    drawClouds(ctx);
+    // Wolken (weiß, nicht bei "Nachts")
+    if (bgMode !== "nacht") {
+        drawClouds(ctx);
+    }
 
     // Pipes (rot, mit Pixelrand)
     for (let pipe of pipes) {
@@ -202,6 +220,32 @@ function draw() {
     }
 }
 
+function drawIdleScreen() {
+    ctx.fillStyle = bgColors[bgMode];
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Wolken (außer Nachts)
+    if (bgMode !== "nacht") {
+        drawClouds(ctx);
+    }
+
+    drawBird(ctx, bird.x, bird.y, birdColor, 0);
+
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = "#fff";
+    ctx.font = "bold 22px monospace";
+    ctx.textAlign = "center";
+    ctx.globalAlpha = 0.94;
+    ctx.fillText("Tippe auf den Knopf", canvas.width / 2, 230);
+    ctx.globalAlpha = 0.94;
+    ctx.font = "16px monospace";
+    ctx.fillText("um zu starten!", canvas.width / 2, 260);
+    ctx.globalAlpha = 1;
+}
+
 function loop(ts) {
     if (!gameActive && !gameOverState) return;
     let now = performance.now();
@@ -209,7 +253,7 @@ function loop(ts) {
     frameTime = now;
     update(dt);
     draw();
-    if (gameActive) requestAnimationFrame(loop);
+    if (gameActive && gameStarted) requestAnimationFrame(loop);
 }
 
 // ======= Hilfsfunktionen =======
@@ -296,7 +340,7 @@ function drawBird(ctx, x, y, color, flap) {
 // ======= Pixelwolken =======
 function drawClouds(ctx) {
     ctx.save();
-    ctx.globalAlpha = 1; // volle Deckkraft, also reinweiß!
+    ctx.globalAlpha = 1; // volle Deckkraft, reinweiß!
     for (let i = 0; i < 3; i++) {
         ctx.beginPath();
         let cx = 75 + i * 88;
