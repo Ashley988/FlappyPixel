@@ -1,45 +1,115 @@
 body {
     background: #111;
     color: #fff;
-    font-family: monospace;
+    font-family: 'Press Start 2P', 'Consolas', monospace, sans-serif;
+    margin: 0;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
-    min-height: 100vh;
 }
-#setup, #game {
-    margin-top: 30px;
+
+#setup {
+    margin-top: 40px;
     text-align: center;
 }
-canvas {
+
+#gameFrame {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#gameCanvas {
+    margin-top: 18px;
     background: #222;
-    display: block;
-    margin: 0 auto;
+    border: 3px solid #fff;
+    border-radius: 18px;
+    box-shadow: 0 0 16px #000a;
     image-rendering: pixelated;
-    border: 2px solid #fff;
+    touch-action: none;
+    max-width: 97vw;
+    height: auto;
 }
+
 #scoreBox {
-    font-size: 1.5em;
-    margin: 10px 0;
+    font-size: 1.4em;
+    margin: 10px 0 6px 0;
+    letter-spacing: 1px;
+    text-shadow: 0 2px 5px #000a;
 }
+
+#controller {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+#jumpBtn {
+    background: none;
+    border: none;
+    outline: none;
+    padding: 0;
+    cursor: pointer;
+    border-radius: 50%;
+    box-shadow: 0 4px 15px #0007;
+    transition: transform 0.12s;
+    width: 62px;
+    height: 62px;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+}
+#jumpBtn:active {
+    transform: scale(0.93);
+    box-shadow: 0 2px 6px #000b;
+}
+
 button {
     background: #333;
     color: #fff;
-    font-size: 1em;
+    font-size: 1.05em;
     border: 1px solid #fff;
-    padding: 8px 18px;
+    border-radius: 7px;
+    padding: 11px 25px;
+    margin-top: 8px;
     cursor: pointer;
-    margin-top: 10px;
+    transition: background 0.16s;
 }
 button:hover {
     background: #555;
 }
+
 label {
-    font-size: 1em;
-    margin-bottom: 8px;
+    font-size: 1.1em;
+    margin-bottom: 13px;
     display: inline-block;
 }
-input[type="range"] {
-    width: 100px;
+
+input[type="color"] {
+    margin-left: 6px;
+    border: none;
+    width: 36px;
+    height: 28px;
+    background: none;
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+@media (max-width: 500px) {
+    #gameCanvas {
+        width: 97vw !important;
+        height: 72vw !important;
+        max-width: 330px;
+        max-height: 480px;
+    }
+    #gameFrame {
+        width: 100vw;
+    }
+    #controller {
+        margin-top: 9px;
+        margin-bottom: 7px;
+    }
 }
