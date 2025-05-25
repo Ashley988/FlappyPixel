@@ -12,12 +12,17 @@
     <label>Farbe vom Bird:
       <input type="color" id="birdColor" value="#FFD700">
     </label>
+    <br><br>
+    <label>Anzahl Leben:
+      <input type="range" min="1" max="7" value="3" id="livesRange">
+      <span id="livesValue">3</span>
+    </label>
     <br>
     <button id="startBtn">Spiel starten</button>
   </div>
   <div id="game" style="display:none;">
     <div id="gameFrame">
-      <canvas id="gameCanvas" width="390" height="620"></canvas>
+      <canvas id="gameCanvas" width="340" height="570"></canvas>
       <div id="scoreBox">
         Score: <span id="score">0</span>
         <span id="livesBox" style="margin-left:18px;">Leben: 3</span>
