@@ -1,20 +1,22 @@
-// ======= Spielvariablen =======
+// ========== SPIELVARIABLEN ==========
 let canvas, ctx, animationId;
 let bird = {}, pipes = [];
 let gameActive = false, gameOverState = false;
-let gravity = 0.25, jump = -4.9;
-let score = 0, speed = 2.1, birdColor = "#FFD700";
-let pipeGap = 200, pipeWidth = 54, pipeMin = 40, pipeMax = 410;
-let speedIncrease = 0.038, minGap = 110, maxSpeed = 4.2;
-let lastPipeTime = 0, pipeInterval = 1450, frameTime = 0;
+let gravity = 0.23, jump = -4.6;
+let score = 0, speed = 1.85, birdColor = "#FFD700";
+let pipeGap = 205, pipeWidth = 52, pipeMin = 32, pipeMax = 410;
+let speedIncrease = 0.019, minGap = 115, maxSpeed = 3.4;
+let lastPipeTime = 0, pipeInterval = 1540, frameTime = 0;
 let flapAnimation = 0;
 let lives = 3;
 let invulnerable = false;
 let selectedLives = 3;
 
-// ======= Auswahl für Leben vor Spielstart =======
+// ======= Leben-Auswahl vor Spielstart =======
 const livesRange = document.getElementById('livesRange');
 const livesValue = document.getElementById('livesValue');
+selectedLives = parseInt(livesRange.value, 10);
+
 livesRange.addEventListener('input', function() {
     livesValue.textContent = livesRange.value;
     selectedLives = parseInt(livesRange.value, 10);
@@ -70,10 +72,10 @@ function startGame() {
     gameActive = true;
     gameOverState = false;
     score = 0;
-    speed = 2.1;
-    pipeGap = 200;
+    speed = 1.85;
+    pipeGap = 205;
     lastPipeTime = 0;
-    pipeInterval = 1450;
+    pipeInterval = 1540;
     invulnerable = false;
     document.getElementById('score').textContent = score;
     updateLivesDisplay();
@@ -82,7 +84,7 @@ function startGame() {
 }
 
 function createPipe() {
-    let minH = 38;
+    let minH = 28;
     let maxH = canvas.height - pipeGap - minH;
     let gapY = Math.floor(Math.random() * (maxH - minH + 1)) + minH;
     return { x: canvas.width, gapY: gapY, scored: false };
@@ -110,11 +112,11 @@ function update(dt) {
             pipes[i].scored = true;
             score++;
             document.getElementById('score').textContent = score;
-            // Schwierigkeit steigern
-            if (score % 3 === 0 && speed < maxSpeed) {
+            // Schwierigkeit LANGSAM steigern
+            if (score % 6 === 0 && speed < maxSpeed) {
                 speed += speedIncrease;
-                pipeGap = Math.max(pipeGap - 10, minGap);
-                pipeInterval = Math.max(pipeInterval - 55, 900);
+                pipeGap = Math.max(pipeGap - 7, minGap);
+                pipeInterval = Math.max(pipeInterval - 35, 870);
             }
         }
         // Entferne Pipes, die links raus sind
@@ -158,7 +160,7 @@ function draw() {
     ctx.fillStyle = "#111";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Dezente Pixelwolken
+    // Pixelwolken
     drawClouds(ctx);
 
     // Pipes (rot, mit Pixelrand)
@@ -282,7 +284,7 @@ function drawBird(ctx, x, y, color, flap) {
 // ======= Pixelwolken =======
 function drawClouds(ctx) {
     ctx.save();
-    ctx.globalAlpha = 0.12;
+    ctx.globalAlpha = 0.11;
     for (let i = 0; i < 3; i++) {
         ctx.beginPath();
         let cx = 75 + i * 88;
