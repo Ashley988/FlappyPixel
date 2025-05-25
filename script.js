@@ -157,8 +157,10 @@ function updateLivesDisplay() {
 
 function draw() {
     // Hintergrund
-    ctx.fillStyle = "#111";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Hintergrund (himmelblau)
+ctx.fillStyle = "#59d0ff";
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
 
     // Pixelwolken
     drawClouds(ctx);
